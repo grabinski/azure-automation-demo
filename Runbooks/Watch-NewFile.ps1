@@ -43,10 +43,15 @@ Param
     [boolean] $Recurse = $false 
 )
 
-$FolderWatcherWatermark = "Watch-NewFileTimestamp"
-$FolderWatermark =  (Get-Date (Get-AutomationVariable -Name $FolderWatcherWatermark)).ToLocalTime()
+$FolderWatermark = (Get-Date (Get-AutomationVariable -Name 'Watch-NewFileTimestamp')).ToLocalTime()
 
-$Files = Get-ChildItem -Path $FolderPath -Filter $Extension -Recurse:$Recurse | Where-Object {$_.LastWriteTime -gt $FolderWatermark} | Sort-Object -Property LastWriteTime
+$FilesParameters = @{
+    Path = $FolderPath
+    Filter = $Extension
+    Recurse = $Recurse
+}
+
+$Files = Get-ChildItem @FilesParameters | Where-Object {$_.LastWriteTime -gt $FolderWatermark} | Sort-Object -Property LastWriteTime
 
 # Iterate through any new files and trigger an action runbook
 foreach ($File in $Files)
@@ -54,15 +59,16 @@ foreach ($File in $Files)
     # Set up values we want to send to the action runbook. Only process files and not directories
     if (!$File.PSIsContainer)
     {
-        $Properties = @{}
-        $Properties.FileName = $File.FullName
-        $Properties.Length = $File.Length
+        $Properties = @{
+            FileName = $File.FullName
+            Length = $File.Length
+        }
 
         $Data = $Properties | ConvertTo-Json
 
         Invoke-AutomationWatcherAction -Message "Process new file..." -Data $Data
     
         # Update watermark using last modified so we only get new files
-        Set-AutomationVariable -Name $FolderWatcherWatermark -Value (Get-Date $File.LastWriteTime).AddMilliseconds(1).ToLocalTime()
+        Set-AutomationVariable -Name $FolderWatcherWatermark -Value (Get-Date $File.LastWriteTime).ToLocalTime()
     }
 }
