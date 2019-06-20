@@ -42,15 +42,14 @@ Param
     [Parameter(Mandatory=$false)]
     [boolean] $Recurse = $false 
 )
-
-$FolderWatermark = (Get-Date (Get-AutomationVariable -Name 'Watch-NewFileTimestamp')).ToLocalTime()
+$FolderWatcherWatermark = 'Watch-NewFileTimestamp'
+$FolderWatermark = (Get-Date (Get-AutomationVariable -Name $FolderWatcherWatermark)).ToLocalTime()
 
 $FilesParameters = @{
     Path = $FolderPath
     Filter = $Extension
     Recurse = $Recurse
 }
-
 $Files = Get-ChildItem @FilesParameters | Where-Object {$_.LastWriteTime -gt $FolderWatermark} | Sort-Object -Property LastWriteTime
 
 # Iterate through any new files and trigger an action runbook
