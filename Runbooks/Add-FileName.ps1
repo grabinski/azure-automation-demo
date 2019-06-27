@@ -2,7 +2,8 @@ param(
   $EVENTDATA
 )
 
-$EVENTDATA.Data.FileName
+$data = $EVENTDATA.EventProperties.Data | ConvertFrom-Json
+$data
 
 $cred = Get-AutomationPSCredential -Name 'Demo-SP-Site-Cred'
 $url = Get-AutomationVariable -Name 'Demo-SP-Site-URL'
