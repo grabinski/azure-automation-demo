@@ -2,7 +2,7 @@ param(
   $EVENTDATA
 )
 
-$EVENTDATA
+$EVENTDATA.Data.FileName
 
 $cred = Get-AutomationPSCredential -Name 'Demo-SP-Site-Cred'
 $url = Get-AutomationVariable -Name 'Demo-SP-Site-URL'
